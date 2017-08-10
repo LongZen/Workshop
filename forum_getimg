@@ -1,0 +1,54 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug  8 20:05:03 2017
+@author: Michael
+"""
+
+#这是一个简单的网络爬虫程序
+#首先，引入我们需要用到的模块
+
+import requests
+from bs4 import BeautifulSoup
+import os
+import re
+
+#要爬取的URL地址
+headers = {'User-Agent':"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1"}
+#浏览器请求头（大部分网站没有这个请求头会报错、请务必加上哦）
+
+url='http://www.tuyimm.com/forum-12-1.html'
+
+html=requests.get(url,headers=headers)   #使用requests中的get方法来获取url()的内容 headers为上面设置的请求头、请务必参考requests官方文档解释
+#print(html.text)##打印出html的文本内容。注意：用于打印网页。其它如图片、视频、音频等多媒体的下载用concent。
+Soup=BeautifulSoup(html.text,'lxml') #用BS解析网页内容，‘lxml’是指定的解析器。
+a_tag=Soup.find_all('a',class_='preview') #找到jpg图片所在标签下的所有列表
+
+import urllib
+from urllib.request import urlopen,urlretrieve
+
+#提取图片地址的正则表达式
+reg = r'zoomfile="(.+?\.jpg)" '
+imgre = re.compile(reg)
+
+#用两个for循环逐个提取图片
+i = 0
+for a in a_tag:
+    title=a['title'] #取出a标签的title属性
+    href=a['href'] #取出a标签的href属性
+    #print(title,href)
+    print(href)
+        #all_url=href[:] #入口地址都在href[:]
+    page = urlopen(href)
+    html = str(page.read())
+    page.close()
+        
+    imglist = re.findall(imgre,html)
+    x = 0
+    for imgurl in imglist:
+        urlretrieve(imgurl,'E:\\pic\%s-%s.jpg' %(i,x))
+        x = x + 1
+        print('Done')
+    print('第'+str(i)+'版Done')
+    i = i + 1
+    
+print("All Done!")
